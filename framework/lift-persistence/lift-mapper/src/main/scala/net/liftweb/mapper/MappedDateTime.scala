@@ -36,6 +36,17 @@ abstract class MappedDateTime[T<:Mapper[T]](val fieldOwner: T) extends MappedFie
   private val data = FatLazy(defaultValue)
   private val orgData = FatLazy(defaultValue)
 
+  /**
+   * This method defines the string parsing semantics of this field. Used in setFromAny.
+   * By default uses ConversionRules' parseDateTime FactoryMaker; override for field-specific behavior
+   */
+  def parse(s: String): Box[Date] = ConversionRules.parseDateTime()(s)
+  /**
+   * This method defines the string parsing semantics of this field. Used in toString.
+   * By default uses ConversionRules' formatDateTime FactoryMaker; override for field-specific behavior
+   */
+  def format(d: Date): String = ConversionRules.formatDateTime()(d)
+
   protected def real_i_set_!(value: Date): Date = {
     if (value != data.get) {
       data() = value
@@ -90,8 +101,8 @@ abstract class MappedDateTime[T<:Mapper[T]](val fieldOwner: T) extends MappedFie
   override def setFromAny(f: Any): Date = f match {
     case JsonAST.JNull => this.set(null)
     case JsonAST.JInt(v) => this.set(new Date(v.longValue))
-    case s: String => LiftRules.parseDate(s).map(d => this.set(d)).openOr(this.is)
-    case (s: String) :: _ => LiftRules.parseDate(s).map(d => this.set(d)).openOr(this.is)
+    case s: String => parse(s).map(d => this.set(d)).openOr(this.is)
+    case (s: String) :: _ => parse(s).map(d => this.set(d)).openOr(this.is)
     case _ => this.is
   }
 
@@ -137,7 +148,7 @@ abstract class MappedDateTime[T<:Mapper[T]](val fieldOwner: T) extends MappedFie
     case d => d.getTime < millis
   }
 
-  override def toString: String = LiftRules.formatDate(is)
+  override def toString: String = format(is)
 }
 
 }

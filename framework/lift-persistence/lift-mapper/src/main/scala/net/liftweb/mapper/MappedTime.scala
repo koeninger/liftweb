@@ -45,6 +45,17 @@ abstract class MappedTime[T<:Mapper[T]](val fieldOwner: T) extends MappedField[D
   private val data = FatLazy(defaultValue)
   private val orgData = FatLazy(defaultValue)
 
+  /**
+   * This method defines the string parsing semantics of this field. Used in setFromAny.
+   * By default uses ConversionRules' parseTime FactoryMaker; override for field-specific behavior
+   */
+  def parse(s: String): Box[Date] = ConversionRules.parseTime()(s)
+  /**
+   * This method defines the string parsing semantics of this field. Used in toString.
+   * By default uses ConversionRules' formatTime FactoryMaker; override for field-specific behavior
+   */
+  def format(d: Date): String = ConversionRules.formatTime()(d)
+
   protected def real_i_set_!(value: Date): Date = {
     if (value != data.get) {
       data() = value

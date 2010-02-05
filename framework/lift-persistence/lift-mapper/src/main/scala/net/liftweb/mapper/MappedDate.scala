@@ -42,6 +42,17 @@ import _root_.scala.xml.{NodeSeq}
 abstract class MappedDate[T<:Mapper[T]](val fieldOwner: T) extends MappedField[Date, T] {
   private val data = FatLazy(defaultValue)
   private val orgData = FatLazy(defaultValue)
+  
+  /**
+   * This defines the string parsing semantics of this field. Used in setFromAny.
+   * By default uses ConversionRules' parseDate FactoryMaker; override for field-specific behavior
+   */
+  def parse(s: String): Box[Date] = ConversionRules.parseDate()(s)
+  /**
+   * This method defines the string parsing semantics of this field. Used in toString.
+   * By default uses ConversionRules' formatDate FactoryMaker; override for field-specific behavior
+   */
+  def format(d: Date): String = ConversionRules.formatDate()(d)
 
   protected def real_i_set_!(value: Date): Date = {
     if (value != data.get) {
@@ -98,8 +109,8 @@ abstract class MappedDate[T<:Mapper[T]](val fieldOwner: T) extends MappedField[D
   override def setFromAny(f : Any): Date = f match {
     case JsonAST.JNull => this.set(null)
     case JsonAST.JInt(v) => this.set(new Date(v.longValue))
-    case s: String => LiftRules.parseDate(s).map(d => this.set(d)).openOr(this.is)
-    case (s: String) :: _ => LiftRules.parseDate(s).map(d => this.set(d)).openOr(this.is)
+    case s: String => parse(s).map(d => this.set(d)).openOr(this.is)
+    case (s: String) :: _ => parse(s).map(d => this.set(d)).openOr(this.is)
     case _ => this.is
   }
 
@@ -145,7 +156,7 @@ abstract class MappedDate[T<:Mapper[T]](val fieldOwner: T) extends MappedField[D
     case d => d.getTime < millis
   }
 
-  override def toString: String = LiftRules.formatDate(is)
+  override def toString: String = format(is)
 }
 
 }
