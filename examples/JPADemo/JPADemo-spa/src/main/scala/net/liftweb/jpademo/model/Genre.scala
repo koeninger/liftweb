@@ -28,7 +28,8 @@ object Genre extends Enumeration with Enumv {
   val unknown = Value("Unknown", "Unknown genre")
 }
 
-class GenreType extends EnumvType(Genre) {}
+// hibernate specific
+//class GenreType extends EnumvType(Genre) {}
 }
 }
 }

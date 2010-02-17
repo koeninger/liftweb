@@ -21,7 +21,6 @@ package model {
 import _root_.java.util.Date
 
 import _root_.javax.persistence._
-import _root_.org.hibernate.annotations.Type
 
 
 /**
@@ -40,7 +39,9 @@ class Book {
   @Column{val nullable = true}
   var published : Date = new Date()
 
-  @Type{val `type` = "net.liftweb.jpademo.model.GenreType"}
+// hibernate specific
+//  @Type{val `type` = "net.liftweb.jpademo.model.GenreType"}
+  @Transient
   var genre : Genre.Value = Genre.unknown
 
   @ManyToOne{val optional = false}
